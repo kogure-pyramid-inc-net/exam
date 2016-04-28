@@ -1,0 +1,17 @@
+
+  server {
+    listen 8080;
+    server_name localhost;
+
+    location /images {
+      proxy_pass http://localhost:8090/assets;
+      proxy_set_header Host $http_host;
+      proxy_pass_header Server;
+    }
+    location / {
+      proxy_pass http://localhost:8090;
+      proxy_set_header Host $http_host;
+      proxy_pass_header Server;
+    }
+  }
+}
