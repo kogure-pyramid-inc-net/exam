@@ -18,9 +18,3 @@ sed -i -e "338s/AllowOverride None/AllowOverride All/g" /etc/httpd/conf/httpd.co
 
 #かといって2番目出現指定も危ない
 #sed -i -e "s/AllowOverride None/AllowOverride All/2" /etc/httpd/conf/httpd.conf
-
-if [ $# == 2 ]; then
-	echo $@ #特に意味はない
-    cp /vagrant/scripts/.htaccess /var/www/html/
-    htpasswd -bc /var/www/.htpasswd $1 $2
-fi
