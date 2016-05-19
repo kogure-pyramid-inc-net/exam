@@ -2,8 +2,8 @@
 set -eu
 
 yum -y update
-#pcre-develのソースが発見できなかった
-yum -y install gcc gcc-c++ pcre-devel #python-devel
+yum -y install gcc gcc-c++ 
+#pcre-devel python-devel
 
 cd /tmp
 
@@ -15,7 +15,7 @@ tar xzvf apr-1.5.2.tar.gz
 cd apr-1.5.2
 ./configure
 make
-#/usr/local/apr
+#prefix指定しないと/usr/local/aprに作成される
 make install
 cd ..
 
@@ -42,8 +42,8 @@ cd ..
 wget http://ftp.yz.yamagata-u.ac.jp/pub/network/apache//httpd/httpd-2.4.20.tar.gz
 tar xzvf httpd-2.4.20.tar.gz
 cd httpd-2.4.20
-#configureにpcre-develも必要だがソースが見つからずyumで入れた
-./configure #--with-pcre=/usr/local/bin/pcre-config
+#configureにpcre-develも必要だが場所指定すればOKらしい
+./configure --with-pcre=/usr/local/bin/pcre-config
 make
 make install
 cd ..
@@ -65,18 +65,29 @@ tar xzvf nginx-1.10.0.tar.gz
 cd nginx-1.10.0
 ./configure \
  --with-http_realip_module 
-
 make
 make install
 cd ..
+
+#これが無いとnginxの起動に失敗する(pcre-develを入れると入るらしいが。。。)
+ln -s /usr/local/lib/libpcre.so.1 /lib64/libpcre.so.1
 
 # install php ###########################################################################
 #libxml2(phpのconfigureで必要)
 wget http://xmlsoft.org/sources/libxml2-2.9.3.tar.gz
 tar xzvf libxml2-2.9.3.tar.gz
 cd libxml2-2.9.3
-./configure --without-python
-#python-devel(libxml2のmakeで必要)
+./configure --without-python 
+#python-devel(libxml2のmakeで必要)だが除外でOKらしい
+make
+make install
+cd ..
+
+#perl phpのmakeで必要
+wget http://www.cpan.org/src/5.0/perl-5.24.0.tar.gz
+tar xzvf perl-5.24.0.tar.gz
+cd perl-5.24.0
+./Configure -d -e
 make
 make install
 cd ..
@@ -85,9 +96,8 @@ cd ..
 wget -O php-5.6.21.tar.gz http://jp2.php.net/get/php-5.6.21.tar.gz/from/this/mirror
 tar xzvf php-5.6.21.tar.gz
 cd php-5.6.21
-#perl
-yum -y install perl
-sed -i -e "s/#\!\/replace\/with\/path\/to\/perl\/interpreter -w/#\!\/usr\/bin\/perl -w/g" /usr/local/apache2/bin/apxs
+#perlのパスを指定
+sed -i -e "s/#\!\/replace\/with\/path\/to\/perl\/interpreter -w/#\!\/usr\/local\/bin\/perl -w/g" /usr/local/apache2/bin/apxs
 ./configure --with-apxs2=/usr/local/apache2/bin/apxs --enable-mbstring --enable-mbregex
 make ZEND_EXTRA_LIBS='-lresolv'
 make install
